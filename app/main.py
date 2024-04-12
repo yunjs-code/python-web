@@ -3,21 +3,13 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-user_name = None
+user_name = "이동하"
 
 class User(BaseModel):
     name: str
 
 
-@app.get("/")
-def root():
-    return{ "message": "Hello Bosman!"}
-
-@app.get("/home")
-def home():
-    return { "message": "Bye Bosman!" }
-
-#####여기까지 저번주########
+user1=User(name="dongha hihi")
 
 
 @app.post("/user/")
