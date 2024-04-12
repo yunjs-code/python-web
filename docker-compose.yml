@@ -1,10 +1,10 @@
-version: "3.12"
+version: "3.8"  # 사용 가능한 최신 버전으로 수정
 
 services:
   fastapi:
     image: fastapi
-    command: uvicorn app.main:app -- host 0.0.0.0 --port 8080 --reload
-    ports: 
-      -8080:8080
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    ports:
+      - "8080:8080"  # 대괄호를 사용하여 배열 형태로 포트 매핑 정의
     volumes:
-      -./app:/code/app
+      - ./app:/code/app  # 대괄호를 사용하여 배열 형태로 볼륨 매핑 정의
