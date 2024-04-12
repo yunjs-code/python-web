@@ -1,30 +1,24 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
+# 데이터 모델 정의
+class Item(BaseModel):
+    name: str
+
+# 메모리 내 데이터 저장소
 items = {}
 
-@app.post("/items/{item_name}")
-def create_item(item_name: str):
-    if item_name in items:
-        return {"Error": "Item already exists"}
-    items[item_name] = item_name
-    return {"item_name": item_name}
+# POST 요청으로 데이터를 받아 저장하는 엔드포인트
+@app.post("/items/")
+def create_item(item: Item):
+    if item.name in items:
+        return {"Error": "Item with this name already exists"}
+    items[item.name] = item
+    return item
 
+# GET 요청으로 데이터를 조회하는 엔드포인트
 @app.get("/items/{item_name}")
 def read_item(item_name: str):
-    return {"item_name": items.get(item_name, "Not found")}
-
-@app.put("/items/{item_name}")
-def update_item(old_name: str, new_name: str):
-    if old_name not in items:
-        return {"Error": "Item not found"}
-    items[new_name] = items.pop(old_name)
-    return {"item_name": new_name}
-
-@app.delete("/items/{item_name}")
-def delete_item(item_name: str):
-    if item_name not in items:
-        return {"Error": "Item not found"}
-    del items[item_name]
-    return {"message": "Item deleted successfully"}
+    return items.get(item_name, {"Error": "Item not found"})
