@@ -1,30 +1,45 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
 
-items = {}
+user_name = None
 
-@app.post("/items/{item_name}")
-def create_item(item_name: str):
-    if item_name in items:
-        return {"Error": "Item already exists"}
-    items[item_name] = item_name
-    return {"item_name": item_name}
+class User(BaseModel):
+    name: str
 
-@app.get("/items/{item_name}")
-def read_item(item_name: str):
-    return {"item_name": items.get(item_name, "Not found")}
 
-@app.put("/items/{item_name}")
-def update_item(old_name: str, new_name: str):
-    if old_name not in items:
-        return {"Error": "Item not found"}
-    items[new_name] = items.pop(old_name)
-    return {"item_name": new_name}
+@app.get("/")
+def root():
+    return{ "message": "Hello Bosman!"}
 
-@app.delete("/items/{item_name}")
-def delete_item(item_name: str):
-    if item_name not in items:
-        return {"Error": "Item not found"}
-    del items[item_name]
-    return {"message": "Item deleted successfully"}
+@app.get("/home")
+def home():
+    return { "message": "Bye Bosman!" }
+
+#####여기까지 저번주########
+
+
+@app.post("/user/")
+async def receive_user(user: User):
+    global user_name
+    user_name = user.name
+    return {"message": "User name received"}
+
+
+@app.get("/user/")
+async def get_user():
+    return {"user_name": user_name}
+
+@app.put("/user/")
+async def receive_user(user: User):
+    global user_name
+    user_name = user.name
+    return {"message": "User name changed"}
+
+
+@app.delete("/user/")
+async def del_user():
+    global user_name
+    user_name = "DELETED"
+    return {"message": "User name deleted"}
