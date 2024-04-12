@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -20,3 +20,7 @@ def read_item(item_name: str):
     if item_name in items:
         return items[item_name]
     return {"Error": "Item not found."}
+
+@app.get("/echo/")
+def echo_name(name: str = Query(None, description="Enter your name to echo")):
+    return {"Echoed Name": name}
