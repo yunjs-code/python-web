@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+
+logging.basicConfig(level=logging.DEBUG)
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -27,18 +30,22 @@ app.add_middleware(
 
 @app.get("/login")
 def login():
+    logging.debug("Redirecting to authorization URL.")
     redirect_uri = (
         f"{AUTH_URL}?response_type=code&client_id={CLIENT_ID}&"
         f"redirect_uri={REDIRECT_URI}&scope=login inquiry transfer&"
         f"state={STATE}&auth_type=0"
     )
+    logging.debug(f"Authorization URL: {redirect_uri}")
     return RedirectResponse(redirect_uri)
 
 @app.get("/callback")
 def callback(request: Request):
     code = request.query_params.get("code")
     state = request.query_params.get("state")
+    logging.debug(f"Received code: {code}, state: {state}")
     if not code or state != STATE:
+        logging.error("Invalid state or no code provided")
         return {"error": "Invalid state or no code provided"}
 
     data = {
@@ -54,11 +61,14 @@ def callback(request: Request):
         "Accept": "application/json"
     }
 
+    logging.debug(f"Requesting token with data: {data}")
     response = requests.post(TOKEN_URL, data=data, headers=headers)
     if response.status_code != 200:
+        logging.error(f"Failed to obtain access token: {response.text}")
         return {"error": "Failed to obtain access token"}
 
     token_data = response.json()
+    logging.debug(f"Received token data: {token_data}")
     access_token = token_data["access_token"]
     refresh_token = token_data.get("refresh_token", "")
     user_seq_no = token_data["user_seq_no"]
@@ -67,10 +77,12 @@ def callback(request: Request):
         f"{FRONTEND_URI}?access_token={access_token}"
         f"&refresh_token={refresh_token}&user_seq_no={user_seq_no}"
     )
+    logging.debug(f"Redirecting to frontend with URL: {redirect_url}")
     return RedirectResponse(redirect_url)
 
 @app.post("/save_user_info")
 def save_user_info(user_info: dict):
+    logging.debug(f"Saving user info: {user_info}")
     notion_url = "https://api.notion.com/v1/pages"
     notion_token = os.getenv("NOTION_TOKEN")
     notion_db_id = os.getenv("NOTION_DB_ID")
@@ -93,10 +105,13 @@ def save_user_info(user_info: dict):
         }
     }
 
+    logging.debug(f"Sending data to Notion: {data}")
     response = requests.post(notion_url, headers=headers, json=data)
     if response.status_code != 200:
+        logging.error(f"Failed to save user info to Notion: {response.text}")
         return {"error": "Failed to save user info"}
     
+    logging.debug("User info saved successfully")
     return {"message": "User info saved successfully"}
 
 if __name__ == "__main__":
