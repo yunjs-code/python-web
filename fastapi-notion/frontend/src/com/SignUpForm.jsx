@@ -58,39 +58,75 @@ function SignUpForm() {
     }
   };
 
-  return (
-    <div className={styles.container}>
-      <h2>SIGN UP</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name</label>
-          <input name="name" value={userData.name} onChange={handleChange} placeholder="Cristoval" />
-        </div>
-        <div>
-          <label>Email</label>
-          <input name="email" value={userData.email} onChange={handleChange} placeholder="abc@google.com" />
-        </div>
-        <div>
-          <label>Password</label>
-          <input name="password" value={userData.password} onChange={handleChange} placeholder="***" />
-        </div>
-        <div>
-          <label>Access Token</label>
-          <input name="access_token" value={userData.access_token} readOnly />
-        </div>
-        <div>
-          <label>Refresh Token</label>
-          <input name="refresh_token" value={userData.refresh_token} readOnly />
-        </div>
-        <div>
-          <label>User Seq No</label>
-          <input name="user_seq_no" value={userData.user_seq_no} readOnly />
-        </div>
-        <button type="button" onClick={handleAuth}>인증받기</button>
-        <button type="submit">가입하기</button>
-      </form>
-    </div>
-  );
-}
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    console.log("Logging in user:", userData);
 
-export default SignUpForm;
+    try {
+      const response = await fetch('http://localhost:8000/login_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: userData.name, password: userData.password })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Login successful:", data);
+        alert("Login successful!");
+      } else {
+        console.error("Failed to login:", data);
+        alert("Failed to login: " + JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error("Network or server error:", error);
+      alert("Network or server error: " + error.message);
+    }
+    };
+    
+    return (
+    <div className={styles.container}>
+    <h2>SIGN UP</h2>
+    <form onSubmit={handleSubmit}>
+    <div>
+    <label>Name</label>
+    <input name="name" value={userData.name} onChange={handleChange} placeholder="Cristoval" />
+    </div>
+    <div>
+    <label>Email</label>
+    <input name="email" value={userData.email} onChange={handleChange} placeholder="abc@google.com" />
+    </div>
+    <div>
+    <label>Password</label>
+    <input name="password" value={userData.password} onChange={handleChange} placeholder="***" />
+    </div>
+    <div>
+    <label>Access Token</label>
+    <input name="access_token" value={userData.access_token} readOnly />
+    </div>
+    <div>
+    <label>Refresh Token</label>
+    <input name="refresh_token" value={userData.refresh_token} readOnly />
+    </div>
+    <div>
+    <label>User Seq No</label>
+    <input name="user_seq_no" value={userData.user_seq_no} readOnly />
+    </div>
+    <button type="button" onClick={handleAuth}>인증받기</button>
+    <button type="submit">가입하기</button>
+    </form>
+    <h2>LOGIN</h2>
+    <form onSubmit={handleLogin}>
+    <div>
+    <label>Name</label>
+    <input name="name" value={userData.name} onChange={handleChange} placeholder="Cristoval" />
+    </div>
+    <div>
+    <label>Password</label>
+    <input name="password" value={userData.password} onChange={handleChange} placeholder="***" />
+    </div>
+    <button type="submit">로그인</button>
+    </form>
+    </div>
+    );
+    }
+    
+    export default SignUpForm;
